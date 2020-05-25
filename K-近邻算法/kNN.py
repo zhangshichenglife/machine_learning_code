@@ -97,10 +97,10 @@ def random_data_test(random_ratio, data_set, labels):
     norm_data_set, min_vals, ranges = auto_norm(data_set)
     # 获取测试集 和 训练集 的index定位
     test_index_list = random.sample(range(nrow), n_test)
-    training_index_list = [i for i in range(nrow) if i in test_index_list]
-    # 定义训练集合 和
+    training_index_list = [i for i in range(nrow) if i not in test_index_list]
+    # 定义训练集合 和 训练标签
     training_data_set = norm_data_set[training_index_list]
-    training_labels = np.array(labels)[training_index_list,]
+    training_labels = np.array(labels)[training_index_list]
 
     error_count = 0
     # print('选取测试行：', test_index_list)
