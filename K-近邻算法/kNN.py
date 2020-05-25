@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import random
+import os
+
 
 def creat_data_set():
     """
@@ -98,7 +100,7 @@ def random_data_test(random_ratio, data_set, labels):
     training_index_list = [i for i in range(nrow) if i in test_index_list]
     # 定义训练集合 和
     training_data_set = norm_data_set[training_index_list]
-    training_labels = np.array(labels)[training_index_list, ]
+    training_labels = np.array(labels)[training_index_list,]
 
     error_count = 0
     # print('选取测试行：', test_index_list)
@@ -110,7 +112,8 @@ def random_data_test(random_ratio, data_set, labels):
         if predict_labels != labels[i]:
             error_count += 1
             print('行数', i, '数据内容', data_set[i], '\t', '实际数值', labels[i], '=>', predict_labels)
-    return float(error_count/n_test)
+    error_ratio = error_count / n_test
+    return '%.8f' % error_ratio
 
 
 if __name__ == '__main__':
@@ -129,14 +132,14 @@ if __name__ == '__main__':
     # print(labels)
     fig = plt.figure()
     ax = fig.add_subplot(111)  # 111 为 1x1 窗格下的第一个图表
-    ax.scatter(data_set[:, 1], data_set[:, 2], 15.0*np.array(labels), 15.0*np.array(labels))  # scatter 散点图
+    ax.scatter(data_set[:, 1], data_set[:, 2], 15.0 * np.array(labels), 15.0 * np.array(labels))  # scatter 散点图
     plt.show()
 
     ###############################################
     # datingTestSet2 1，2列的三点图形绘制
     fig2 = plt.figure()
     ax = fig2.add_subplot(111)
-    ax.scatter(data_set[:, 0], data_set[:, 1], 15*np.array(labels), 15*np.array(labels))
+    ax.scatter(data_set[:, 0], data_set[:, 1], 15 * np.array(labels), 15 * np.array(labels))
     plt.show()
 
     ###############################################
@@ -144,15 +147,58 @@ if __name__ == '__main__':
     data_set, labels = file2matrix('datingTestSet.txt')
     fig3 = plt.figure()
     ax1 = fig3.add_subplot(221)
-    ax1.scatter(data_set[:, 0], data_set[:, 1], 15.0*np.array(labels), 15.0*np.array(labels))
+    ax1.scatter(data_set[:, 0], data_set[:, 1], 15.0 * np.array(labels), 15.0 * np.array(labels))
     ax2 = fig3.add_subplot(222)
-    ax2.scatter(data_set[:, 1], data_set[:, 2], 15.0*np.array(labels), 15.0*np.array(labels))
+    ax2.scatter(data_set[:, 1], data_set[:, 2], 15.0 * np.array(labels), 15.0 * np.array(labels))
     ax3 = fig3.add_subplot(223)
-    ax3.scatter(data_set[:, 0], data_set[:, 2], 15.0*np.array(labels), 15.0*np.array(labels))
+    ax3.scatter(data_set[:, 0], data_set[:, 2], 15.0 * np.array(labels), 15.0 * np.array(labels))
     plt.show()
+
     ###############################################
     # 通过Knn 对datingTestSet 进行预测 并且计算重复率
     data_set, labels = file2matrix('datingTestSet.txt')
     error_ratio = random_data_test(0.1, data_set, labels)
     print(error_ratio)
 
+    ###############################################
+    # 对于手写数据集 进行训练和计算
+    # 定义空的训练数据 和 测试数据
+    training_labels = []
+    training_data_set = []
+    test_labels = []
+    test_data_set = []
+    # 遍历文件夹中的文件 将文件名内容 和 文件内容 添加到 对应list 中
+    for filename in os.listdir('./digits/trainingDigits'):
+        n = int(filename.split('_')[0])
+        training_labels.append(n)
+        with open('./digits/trainingDigits/' + filename, 'r') as f:
+            data_set_line = [int(i) for i in f.read().replace('\n', '').strip()]
+            training_data_set.append(data_set_line)
+            f.close()
+
+    for filename in os.listdir('./digits/testDigits'):
+        n = int(filename.split('_')[0])
+        test_labels.append(n)
+        with open('./digits/testDigits/' + filename, 'r') as f:
+            data_set_line = [int(i) for i in f.read().replace('\n', '').strip()]
+            test_data_set.append(data_set_line)
+            f.close()
+    training_labels = np.array(training_labels)
+    training_data_set = np.array(training_data_set)
+    test_labels = np.array(test_labels)
+    test_data_set = np.array(test_data_set)
+
+    # 获取测试数据集合长度
+    nrow_test = len(test_labels)
+    error_count = 0
+    for i in range(nrow_test):
+        predict_label = classify0(inx=test_data_set[i],
+                                  data_set=training_data_set,
+                                  labels=training_labels,
+                                  k=3)
+
+        if predict_label != test_labels[i]:
+            error_count += 1
+            print('{}=>{}'.format(test_labels[i], predict_label))
+    error_ratio = error_count / nrow_test
+    print('%.8f' % error_ratio)
