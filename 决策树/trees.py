@@ -1,6 +1,7 @@
 import numpy as np
 from math import log
 from collections import Counter
+import json
 
 
 def labels_index(data_set, ncol):
@@ -26,7 +27,7 @@ def canculate_shannon_ent(data_set):
     参考链接 https://blog.csdn.net/theonegis/article/details/79890407
     计算香农 熵
     :param data_set: 数据集 array 类型 最后一列使用标签数据（分类变量）
-    :return: 熵值 和 标签计数
+    :return: 熵值
     """
     nrow = data_set.shape[0]
     # 计算 香农 熵 数值
@@ -146,11 +147,22 @@ if __name__ == '__main__':
     # print(choose_best_feature_split(data_set))
 
     #######################################
-    data_set = np.array([[1, 1, 'yes'],
-                         [1, 1, 'yes'],
-                         [1, 0, 'no'],
-                         [0, 1, 'no'],
-                         [0, 1, 'no']])
-    col_name = ['no surfacing', 'flippers']
+    # data_set = np.array([[1, 1, 'yes'],
+    #                      [1, 1, 'yes'],
+    #                      [1, 0, 'no'],
+    #                      [0, 1, 'no'],
+    #                      [0, 1, 'no']])
+    # col_name = ['no surfacing', 'flippers']
+    # res = creat_tree(data_set, col_name)
+    # print(res)
+    #######################################
+    # 读取文件 lenses.txt 并形成决策树
+    with open('lenses.txt', 'r') as f:
+        lenses = [l.strip().split('\t') for l in f.readlines()]
+        f.close()
+    data_set = np.array(lenses)
+    col_name = ['age', 'prescript', 'astigmatic', 'tearRate']
     res = creat_tree(data_set, col_name)
-    print(res)
+    print(json.dumps(res))
+
+
