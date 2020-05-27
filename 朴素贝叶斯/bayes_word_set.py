@@ -67,11 +67,20 @@ def train_docs(train_sentence_matrix, train_sentence_labels):
     # 找出 侮辱性语句 和 非侮辱性语句 的 矩阵
     feelings1_matrix = train_sentence_matrix[feelings1_list, ]
     feelings0_matrix = train_sentence_matrix[feelings0_list, ]
+
     # 矩阵行向量累加
-    feelings1_p_value = feelings1_matrix.sum(axis=0) / feelings1_matrix.sum()
-    feelings0_p_value = feelings0_matrix.sum(axis=0) / feelings0_matrix.sum()
+    # feelings1_p_value = feelings1_matrix.sum(axis=0) / feelings1_matrix.sum()
+    # feelings0_p_value = feelings0_matrix.sum(axis=0) / feelings0_matrix.sum()
+
+    # 为了避免出现概率为 0 的情况  故使用以下矩阵行向量计算
+    feelings1_p_value = (feelings1_matrix + 1).sum(axis=0) / (feelings1_matrix + 1).sum()
+    feelings0_p_value = (feelings0_matrix + 1).sum(axis=0) / (feelings0_matrix + 1).sum()
+
     all_p_value = sum(train_sentence_labels) / nrow
-    return feelings0_p_value, feelings1_p_value, all_p_value
+
+    # return feelings0_p_value, feelings1_p_value, all_p_value
+    # 为避免出现 由于过多 概率 乘积 过小 被 python 认为为0的情况， 我们选用log
+    return np.log(feelings0_p_value), np.log(feelings1_p_value), all_p_value
 
 
 if __name__ == '__main__':
@@ -92,3 +101,12 @@ if __name__ == '__main__':
     print(feelings0_p_value)
     print(feelings1_p_value)
     print(all_p_value)
+
+    ######################################
+    # 对上述分类模型进行测试
+    test_data = ['love my dalmation', 'stupid garbage']
+    for sentence in test_data:
+        sentence_vector = sentence_to_vector(word_list, sentence)
+        p1 = sum(sentence_vector * feelings1_p_value) + np.log(all_p_value)
+        p0 = sum(sentence_vector * feelings0_p_value) + np.log(1 - all_p_value)
+        print(p1 > p0)
