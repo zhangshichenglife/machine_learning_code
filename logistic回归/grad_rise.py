@@ -9,6 +9,15 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
+# 将概率转为0/1
+def classify_probablity_to_bool(x):
+    probability = sigmoid(x)
+    if probability > 0.5:
+        return 1
+    else:
+        return 0
+
+
 # 绘制sigmoid 函数图像
 x = np.linspace(-5, 5, 500)
 y = sigmoid(x)
@@ -46,7 +55,7 @@ def grad_rise_method(data_set, label_set):
     m, n = data_mat.shape
     step_length = 0.001  # 初始化步长
     step_num = 500  # 初始化步数
-    weights = np.ones((3, 1))  # 初始化权重
+    weights = np.ones((n, 1))  # 初始化权重
     weights_list = []  # weights_list 用于收集历史权重， 展示分类效果
     for i in range(step_num):
         # 计算与label_set 实际数值的差值
@@ -67,7 +76,7 @@ def random_grad_rise_method(data_set, label_set):
     :return: list 历史权重列表
     """
     nrow, ncol = data_set.shape
-    step_length = 0.01
+    step_length = 0.05
     weights_list = []
     weights = np.ones(ncol)
     for i in range(nrow):
