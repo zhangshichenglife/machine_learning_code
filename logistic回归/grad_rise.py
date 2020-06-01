@@ -34,6 +34,13 @@ def load_data_set():
 
 # 定义梯度上升路径
 def grad_rise_method(data_set, label_set):
+    """
+    由于梯度上升路径 每布都是带入整个数据集 进行运算， 涉及到数据量巨大的操作，使用随即梯度
+    一行一行的添加 从而计算 weights
+    :param data_set: narray 自变量数据集
+    :param label_set: list 因变量数据集
+    :return: list(matrix(3x1))  历史权重列表
+    """
     data_mat = np.mat(data_set)
     label_mat = np.mat(label_set).transpose()
     m, n = data_mat.shape
@@ -48,6 +55,48 @@ def grad_rise_method(data_set, label_set):
         weights = weights + step_length * data_mat.transpose() * error
         weights_list.append(weights)
     return weights_list
+
+
+# 定义随机梯度上升路径
+def random_grad_rise_method(data_set, label_set):
+    """
+    由于梯度上升路径 每布都是带入整个数据集 进行运算， 涉及到数据量巨大的操作，使用随即梯度
+    一行一行的添加 从而计算 weights
+    :param data_set: narray 自变量数据集
+    :param label_set: list 因变量数据集
+    :return: list 历史权重列表
+    """
+    nrow, ncol = data_set.shape
+    step_length = 0.01
+    weights_list = []
+    weights = np.ones(ncol)
+    for i in range(nrow):
+        error = label_set[i] - sigmoid(sum(data_set[i] * weights))
+        weights = weights + step_length * error * data_set[i]
+        weights_list.append(np.mat(weights).transpose())
+    return weights_list
+
+
+# 作图展示 weights 是如何变化的
+def plot_weights(weights_list):
+    """
+    作图展示 weights  是如何变化的
+    :param weights_list: list(matrix(3x1))
+    :return:
+    """
+    x = list(range(len(weights_list)))
+    y1 = [weights[0, 0] for weights in weights_list]
+    y2 = [weights[1, 0] for weights in weights_list]
+    y3 = [weights[2, 0] for weights in weights_list]
+    fig = plt.figure()
+    ax1 = fig.add_subplot(311)
+    ax2 = fig.add_subplot(312)
+    ax3 = fig.add_subplot(313)
+    ax1.plot(x, y1)
+    ax2.plot(x, y2)
+    ax3.plot(x, y3)
+
+    plt.show()
 
 
 # 作图展示历史分类效果
@@ -82,8 +131,12 @@ def plot_best_fit(data_set, label_set, weights_list=[1, 1, 1]):
         x = np.arange(-3.0, 3.0, 0.1)
         y = (-weights[0, 0] - weights[1, 0] * x) / weights[2, 0]
         ax.plot(x, y, linewidth=4)
-        plt.xlim(min(data_set[:, 1]), max(data_set[:, 1]))
-        plt.ylim(min(data_set[:, 2]), max(data_set[:, 2]))
+        # 指定横纵坐标范围22
+        # plt.xlim(min(data_set[:, 1]), max(data_set[:, 1]))
+        # plt.ylim(min(data_set[:, 2]), max(data_set[:, 2]))
+
+        plt.xlim(-4, 4)
+        plt.ylim(-10, 20)
 
         plt.xlabel('X1')
         plt.ylabel('X2')
@@ -94,4 +147,9 @@ if __name__ == '__main__':
     data_set, label_set = load_data_set()
     # print(data_set, label_set)
     weights_list = grad_rise_method(data_set, label_set)
+    # plot_weights(weights_list)
+    # plot_best_fit(np.array(data_set), label_set, weights_list)
+    weights_list = random_grad_rise_method(np.array(data_set), label_set)
+    print(weights_list[-1])
+    plot_weights(weights_list)
     plot_best_fit(np.array(data_set), label_set, weights_list)
